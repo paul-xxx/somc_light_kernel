@@ -150,6 +150,18 @@ config ARCH_MSM8X60
 	select ARM_HAS_SG_CHAIN
 	select HAVE_NMI_WATCHDOG if MSM_WATCHDOG || MSM_WATCHDOG_V2
 
+config GPU_OVERCLOCK_2D
+	bool "Enable 2D GPU Overclocking option"
+	default n
+	help
+	  Adreno2xx overclocking up to 266 MHz
+
+config GPU_OVERCLOCK_3D
+	bool "Enable 3D GPU Overclocking option"
+	default n
+	help
+	  Adreno2xx overclocking up to 320 MHz
+
 config ARCH_MSM8960
 	bool "MSM8960"
 	select ARCH_MSM_KRAITMP
