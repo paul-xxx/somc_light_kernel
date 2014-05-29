@@ -48,8 +48,8 @@
 #define L_VAL_SCPLL_CAL_MMX	0x22
 #define CPU_FREQ_TABLE_SIZE 38
 
-#define MAX_VDD_SC		1350000 /* uV */
-#define MAX_VDD_MEM		1350000 /* uV */
+#define MAX_VDD_SC		1325000 /* uV */
+#define MAX_VDD_MEM		1325000 /* uV */
 #define MAX_VDD_DIG		1300000 /* uV */
 #define MAX_AXI			 310500 /* KHz */
 #define SCPLL_LOW_VDD_FMAX	 594000 /* KHz */
@@ -231,8 +231,8 @@ static struct clkctl_acpu_speed acpu_freq_tbl_overclocked[] = {
   { {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(19), 1300000, 0x03006000},
   { {1, 1}, 1674000,  ACPU_SCPLL, 0, 0, 1, 0x1F, L2(19), 1325000, 0x03006000},
   { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(21), 1325000, 0x03006000},
-//  { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(21), 1325000, 0x03006000}, # No tested
-//  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(19), 1325000, 0x03006000}, # No tested
+  { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(21), 1325000, 0x03006000},
+  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(19), 1325000, 0x03006000},
   { {0, 0}, 0 },
 };
 
