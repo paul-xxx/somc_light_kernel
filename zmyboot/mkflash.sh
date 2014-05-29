@@ -6,7 +6,7 @@ echo
 rm kernel.elf
 rm zImage
 echo "Packing new kernel.elf..."
-cp ../zkustmodules/zImage zImage
+cp ../zmymodules/zImage zImage
 python mkelf.py -o kernel.elf zImage@0x40208000 ramdisk.cpio.gz@0x41500000,ramdisk RPM.bin@0x20000,rpm
 echo
 echo "The kernel.elf done..."
