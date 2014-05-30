@@ -49,6 +49,7 @@
 #define CPU_FREQ_TABLE_SIZE	38
 
 #define MAX_VDD_SC		1350000 /* uV */
+#define MIN_VDD_SC     		750000 /* uV */
 #define MAX_VDD_MEM		1350000 /* uV */
 #define MAX_VDD_DIG		1300000 /* uV */
 #define MAX_AXI			 310500 /* KHz */
@@ -194,7 +195,7 @@ static struct clkctl_l2_speed l2_freq_tbl_v2[] = {
 	[17] = {1296000,  1, 0x18, 1200000, 1225000, 3},
 	[18] = {1350000,  1, 0x19, 1200000, 1225000, 3},
 	[19] = {1404000,  1, 0x1A, 1200000, 1250000, 4},
-	[20] = {1458000,  1, 0x1A, 1200000, 1275000, 4},
+	[20] = {1458000,  1, 0x1B, 1200000, 1275000, 4},
 };
 
 #define L2(x) (&l2_freq_tbl_v2[(x)])
