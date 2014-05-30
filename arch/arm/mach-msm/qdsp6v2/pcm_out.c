@@ -207,7 +207,11 @@ static long pcm_out_ioctl(struct file *file, unsigned int cmd,
 		if (rc < 0)
 			pr_err("%s: Send Volume command failed rc=%d\n",
 							__func__, rc);
+#ifdef MSM_INCREASE_VOLUME
+		rc = q6asm_set_lrgain(pcm->ac, 0x5000, 0x5000);
+#else
 		rc = q6asm_set_lrgain(pcm->ac, 0x2000, 0x2000);
+#endif
 		if (rc < 0)
 			pr_err("%s: Send channel gain failed rc=%d\n",
 							__func__, rc);
@@ -308,8 +312,11 @@ static int pcm_out_open(struct inode *inode, struct file *file)
 	pcm->buffer_size = BUFSZ;
 	pcm->buffer_count = MAX_BUF;
 	pcm->stream_event = AUDDEV_EVT_STREAM_VOL_CHG;
+#ifdef MSM_INCREASE_VOLUME
+	pcm->volume = 0x5000;
+#else
 	pcm->volume = 0x2000;
-
+#endif
 	pcm->ac = q6asm_audio_client_alloc((app_cb)pcm_out_cb, (void *)pcm);
 	if (!pcm->ac) {
 		pr_err("%s: Could not allocate memory\n", __func__);
