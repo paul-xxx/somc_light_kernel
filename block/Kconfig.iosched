@@ -47,17 +47,6 @@ config IOSCHED_CFQ
 
 	  Note: If BLK_CGROUP=m, then CFQ can be built only as module.
 
-config IOSCHED_SIO
-	tristate "Simple I/O scheduler"
-	default y
-
-config CFQ_GROUP_IOSCHED
-	bool "CFQ Group Scheduling support"
-	depends on IOSCHED_CFQ && BLK_CGROUP
-	default n
-	---help---
-	  Enable group IO scheduling in CFQ.
-
 config IOSCHED_BFQ
 	tristate "BFQ I/O scheduler"
 	depends on EXPERIMENTAL
@@ -79,6 +68,17 @@ config CGROUP_BFQIO
 	  Enable hierarchical scheduling in BFQ, using the cgroups
 	  filesystem interface.  The name of the subsystem will be
 	  bfqio.
+
+config IOSCHED_SIO
+	tristate "Simple I/O scheduler"
+	default y
+
+config CFQ_GROUP_IOSCHED
+	bool "CFQ Group Scheduling support"
+	depends on IOSCHED_CFQ && BLK_CGROUP
+	default n
+	---help---
+	  Enable group IO scheduling in CFQ.
 
 choice
 	prompt "Default I/O scheduler"
@@ -102,7 +102,6 @@ choice
 	config DEFAULT_SIO
 		bool "sio" if IOSCHED_SIO=y
 
-
 endchoice
 
 config DEFAULT_IOSCHED
@@ -110,8 +109,8 @@ config DEFAULT_IOSCHED
 	default "deadline" if DEFAULT_DEADLINE
 	default "cfq" if DEFAULT_CFQ
 	default "noop" if DEFAULT_NOOP
-	default "sio" if DEFAULT_SIO
 	default "bfq" if DEFAULT_BFQ
+	default "sio" if DEFAULT_SIO
 
 endmenu
 
