@@ -228,7 +228,7 @@ static long pcm_in_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			config.buffer_size, config.channel_count,
 			config.sample_rate, config.buffer_count);
 
-		if (!config.channel_count || config.channel_count > 2) {
+		if (!config.channel_count < 1 || config.channel_count > 2) {
 			rc = -EINVAL;
 			break;
 		}
