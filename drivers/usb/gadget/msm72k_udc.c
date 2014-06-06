@@ -386,7 +386,7 @@ static int usb_get_max_power(struct usb_info *ui)
 #endif
 
 	if (suspended || !configured)
-		return 500;
+		return 0;
 
 	return bmaxpow;
 }
