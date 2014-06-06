@@ -47,14 +47,9 @@ EXPORT_SYMBOL(session_route);
 static struct snd_kcontrol_new snd_msm_controls[];
 
 char snddev_name[AUDIO_DEV_CTL_MAX_DEV][44];
-#ifdef MSM_INCREASE_VOLUME
-#define MSM_MAX_VOLUME 0x5000
-#define MSM_VOLUME_STEP ((MSM_MAX_VOLUME+27)/150) /* 17 added to avoid more deviation */
-#else
 #define MSM_MAX_VOLUME 0x2000
-#define MSM_VOLUME_STEP ((MSM_MAX_VOLUME+17)/100) /* 17 added to avoid more deviation */
-#endif
-
+#define MSM_VOLUME_STEP ((MSM_MAX_VOLUME+17)/100) /* 17 added to avoid
+						      more deviation */
 static int device_index; /* Count of Device controls */
 static int simple_control; /* Count of simple controls*/
 static int src_dev;
@@ -197,11 +192,7 @@ static int msm_volume_info(struct snd_kcontrol *kcontrol,
 	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
 	uinfo->count = 2; /* Volume */
 	uinfo->value.integer.min = 0;
-#ifdef MSM_INCREASE_VOLUME
-	uinfo->value.integer.max = 26383;
-#else
 	uinfo->value.integer.max = 16383;
-#endif
 	return 0;
 }
 static int msm_volume_get(struct snd_kcontrol *kcontrol,
@@ -222,11 +213,8 @@ static int msm_volume_put(struct snd_kcontrol *kcontrol,
 
 	if (factor > 10000)
 		return -EINVAL;
-#ifdef MSM_INCREASE_VOLUME
-	if ((volume < 0) || (volume/factor > 200))
-#else
+
 	if ((volume < 0) || (volume/factor > 100))
-#endif
 		return -EINVAL;
 
 	volume = (MSM_VOLUME_STEP * volume);
@@ -981,12 +969,7 @@ static int msm_device_mute_put(struct snd_kcontrol *kcontrol,
 	int mute = ucontrol->value.integer.value[1];
 	struct msm_snddev_info *dev_info;
 	int rc = 0;
-
-#ifdef MSM_INCREASE_VOLUME
-	u16 gain = 0x5000;
-#else
 	u16 gain = 0x2000;
-#endif
 
 	dev_info = audio_dev_ctrl_find_dev(dev_id);
 	if (IS_ERR(dev_info)) {
