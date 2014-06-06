@@ -3567,8 +3567,8 @@ static struct regulator_consumer_supply vreg_consumers_PM8058_S1[] = {
 /* RPM early regulator constraints */
 static struct rpm_regulator_init_data rpm_regulator_early_init_data[] = {
 	/*	 ID       a_on pd ss min_uV   max_uV   init_ip    freq */
-	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1325000, SMPS_HMIN, 1p60),
-	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1250000, SMPS_HMIN, 1p60),
+	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1350000, SMPS_HMIN, 1p60),
+	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1350000, SMPS_HMIN, 1p60),
 };
 
 static struct rpm_regulator_platform_data rpm_regulator_early_pdata = {
@@ -4459,9 +4459,7 @@ static void __init size_pmem_devices(void)
 		pmem_sf_size = MSM_HDMI_PRIM_PMEM_SF_SIZE;
 	android_pmem_pdata.size = pmem_sf_size;
 	android_pmem_camera_pdata.size = pmem_camera_size;
-#ifndef CONFIG_SWIQI_NONE
 	android_pmem_swiqi_pdata.size = pmem_swiqi_size;
-#endif
 	android_pmem_audio_pdata.size = MSM_PMEM_AUDIO_SIZE;
 #endif /*CONFIG_MSM_MULTIMEDIA_USE_ION*/
 	android_pmem_tzcom_pdata.size = pmem_tzcom_size;
@@ -4483,9 +4481,7 @@ static void __init reserve_pmem_memory(void)
 	reserve_memory_for(&android_pmem_smipool_pdata);
 	reserve_memory_for(&android_pmem_pdata);
 	reserve_memory_for(&android_pmem_camera_pdata);
-#ifndef CONFIG_SWIQI_NONE
 	reserve_memory_for(&android_pmem_swiqi_pdata);
-#endif
 	reserve_memory_for(&android_pmem_audio_pdata);
 #endif /*CONFIG_MSM_MULTIMEDIA_USE_ION*/
 	reserve_memory_for(&android_pmem_tzcom_pdata);
