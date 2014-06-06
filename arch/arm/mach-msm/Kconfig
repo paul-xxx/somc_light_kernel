@@ -2,11 +2,6 @@ if ARCH_MSM
 
 menu "MSM SoC Type"
 
-config MSM8660_OC
-	int "OC"
-	default 1512000
-	help
-
 config ARCH_MSM7X01A
 	bool "MSM7x00A / MSM7x01A"
 	select ARCH_MSM_ARM11
@@ -149,18 +144,6 @@ config ARCH_MSM8X60
 	select MSM_RUN_QUEUE_STATS
 	select ARM_HAS_SG_CHAIN
 	select HAVE_NMI_WATCHDOG if MSM_WATCHDOG || MSM_WATCHDOG_V2
-
-config GPU_OVERCLOCK_2D
-	bool "Enable 2D GPU Overclocking option"
-	default n
-	help
-	  Adreno2xx overclocking up to 266 MHz
-
-config GPU_OVERCLOCK_3D
-	bool "Enable 3D GPU Overclocking option"
-	default n
-	help
-	  Adreno2xx overclocking up to 320 MHz
 
 config ARCH_MSM8960
 	bool "MSM8960"
@@ -1606,13 +1589,6 @@ config MSM_DALRPC_TEST
 	help
 	  Exercises DAL RPC calls to QDSP6.
 
-config FORCE_FAST_CHARGE
-	bool "Force AC charge mode at will"
-	default n
-	help
-		A simple sysfs interface to force adapters that
-		are detected as USB to charge as AC.
-
 if CPU_FREQ_MSM
 
 config MSM_CPU_FREQ_SET_MIN_MAX
@@ -1718,6 +1694,24 @@ config MSM8X60_AUDIO
 	default y
 	help
 	  Enable support for qdsp6v2. This provides audio functionality.
+
+config MSM8X60_OC
+	bool "Enable CPU Overclocking option"
+	default n
+	help
+	  MSM8x60 overclocking up to 1.78 GHz
+
+config GPU_OVERCLOCK_2D
+	bool "Enable 2D GPU Overclocking option"
+	default n
+	help
+	  Adreno2xx overclocking up to 266 MHz
+
+config GPU_OVERCLOCK_3D
+	bool "Enable 3D GPU Overclocking option"
+	default n
+	help
+	  Adreno2xx overclocking up to 320 MHz
 
 config MSM8X60_FTM_AUDIO_DEVICES
 	bool "MSM8X60 audio factory test mode support"
@@ -2443,10 +2437,8 @@ config PM8921_MIC_BIAS
 
 choice
     prompt "SWIQI"
-    default SWIQI_NONE
-    config SWIQI_NONE
-	bool "Disable SWIQI/2"
-
+    optional
+    default n
     config SEMC_SWIQI
         bool "Enable SWIQI"
         default n
