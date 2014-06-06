@@ -48,9 +48,15 @@
 #define L_VAL_SCPLL_CAL_MMX	0x22
 #define CPU_FREQ_TABLE_SIZE	38
 
+#ifdef MSM8X60_OC
 #define MAX_VDD_SC		1350000 /* uV */
 #define MAX_VDD_MEM		1350000 /* uV */
 #define MAX_VDD_DIG		1300000 /* uV */
+#else
+#define MAX_VDD_SC		1325000 /* uV */
+#define MAX_VDD_MEM		1325000 /* uV */
+#define MAX_VDD_DIG		1200000 /* uV */
+#endif
 #define MAX_AXI			 310500 /* KHz */
 #define SCPLL_LOW_VDD_FMAX	 594000 /* KHz */
 #define SCPLL_LOW_VDD		1000000 /* uV */
@@ -160,7 +166,9 @@ static struct msm_bus_paths bw_level_tbl[] = {
 	[1] = BW_MBPS(1336), /* At least 167 MHz on bus. */
 	[2] = BW_MBPS(2008), /* At least 251 MHz on bus. */
 	[3] = BW_MBPS(2480), /* At least 310 MHz on bus. */
+#ifdef MSM8X60_OC
 	[4] = BW_MBPS(3200), /* At least 360 MHz on bus. */
+#endif
 };
 
 static struct msm_bus_scale_pdata bus_client_pdata = {
@@ -193,8 +201,12 @@ static struct clkctl_l2_speed l2_freq_tbl_v2[] = {
 	[16] = {1242000,  1, 0x17, 1200000, 1212500, 3},
 	[17] = {1296000,  1, 0x18, 1200000, 1225000, 3},
 	[18] = {1350000,  1, 0x19, 1200000, 1225000, 3},
+#ifdef MSM8X60_OC
 	[19] = {1404000,  1, 0x1A, 1200000, 1250000, 4},
 	[20] = {1458000,  1, 0x1B, 1200000, 1275000, 4},
+#else
+	[19] = {1404000,  1, 0x1A, 1200000, 1250000, 3},
+#endif
 };
 
 #define L2(x) (&l2_freq_tbl_v2[(x)])
@@ -225,11 +237,14 @@ static struct clkctl_acpu_speed acpu_freq_tbl_oc[] = {
   { {1, 1}, 1404000,  ACPU_SCPLL, 0, 0, 1, 0x1A, L2(19), 1175000, 0x03006000},
   { {1, 1}, 1458000,  ACPU_SCPLL, 0, 0, 1, 0x1B, L2(19), 1200000, 0x03006000},
   { {1, 1}, 1512000,  ACPU_SCPLL, 0, 0, 1, 0x1C, L2(19), 1225000, 0x03006000},
+#ifdef MSM8X60_OC
   { {1, 1}, 1566000,  ACPU_SCPLL, 0, 0, 1, 0x1D, L2(19), 1225000, 0x03006000},
   { {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(19), 1250000, 0x03006000},
   { {1, 1}, 1674000,  ACPU_SCPLL, 0, 0, 1, 0x1F, L2(19), 1300000, 0x03006000},
   { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(19), 1325000, 0x03006000},
   { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(20), 1325000, 0x03006000},
+  { {1, 1}, 1800000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(20), 1350000, 0x03006000},
+#endif
   { {0, 0}, 0 },
 };
 
@@ -782,7 +797,11 @@ static __init struct clkctl_acpu_speed *select_freq_plan(void)
 	uint32_t max_khz;
 	struct clkctl_acpu_speed *f;
 
-	max_khz = CONFIG_MSM8660_OC;
+#ifdef MSM8X60_OC
+	max_khz = 1782000;
+#else
+	max_khz = 1512000;
+#endif
 	acpu_freq_tbl = acpu_freq_tbl_oc;
 
 	for (f = acpu_freq_tbl; f->acpuclk_khz != 0; f++)
