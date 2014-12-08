@@ -60,7 +60,7 @@ config SND_SOC_MSM8X60
 	select SND_SOC_MSM8X60_PCM
 	select SND_SOC_MSM8X60_DAI
 	select SND_SOC_MSM_QDSP6_INTF
-	default y
+	default n
 	help
 	 To add support for SoC audio on MSM8X60. This driver
 	 Adds support for audio over DSP. The driver adds Kcontrols
