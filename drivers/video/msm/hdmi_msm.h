@@ -1,5 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
- * Copyright (C) 2013 Sony Mobile Communications AB.
+/* Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -34,6 +33,7 @@ uint32 hdmi_inp(uint32 offset);
 #define HDMI_INP(offset)		inpdw(MSM_HDMI_BASE+(offset))
 #endif
 
+#define HDMI_REAUTH_MAX 3
 
 /*
  * Ref. HDMI 1.4a
@@ -54,20 +54,18 @@ struct hdmi_msm_cec_msg {
 struct hdmi_msm_state_type {
 	boolean panel_power_on;
 	boolean hpd_initialized;
-	boolean hpd_state_in_isr;
 #ifdef CONFIG_SUSPEND
 	boolean pm_suspended;
 #endif
-	boolean hpd_cable_chg_detected;
 	boolean full_auth_done;
 	boolean hpd_during_auth;
 	struct work_struct hpd_state_work;
-	struct timer_list hpd_state_timer;
 	struct completion ddc_sw_done;
 
 	bool hdcp_enable;
 	boolean hdcp_activating;
 	boolean reauth ;
+	boolean reauth_count;
 	struct work_struct hdcp_reauth_work, hdcp_work;
 	struct completion hdcp_success_done;
 	struct timer_list hdcp_timer;

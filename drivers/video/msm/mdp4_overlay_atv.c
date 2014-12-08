@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, 2012 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010, 2012 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -97,6 +97,11 @@ int mdp4_atv_on(struct platform_device *pdev)
 	pipe->src_w = fbi->var.xres;
 	pipe->src_y = 0;
 	pipe->src_x = 0;
+	pipe->dst_h = fbi->var.yres;
+	pipe->dst_w = fbi->var.xres;
+	pipe->dst_y = 0;
+	pipe->dst_x = 0;
+
 	if (mfd->map_buffer) {
 		pipe->srcp0_addr = (unsigned int)mfd->map_buffer->iova[0] + \
 			buf_offset;
@@ -110,7 +115,12 @@ int mdp4_atv_on(struct platform_device *pdev)
 
 	mdp4_overlay_dmae_xy(pipe);	/* dma_e */
 	mdp4_overlay_dmae_cfg(mfd, 1);
-	mdp4_overlay_rgb_setup(pipe);
+
+	if (pipe->pipe_type == OVERLAY_TYPE_RGB)
+		mdp4_overlay_rgb_setup(pipe);
+	else
+	    mdp4_overlay_vg_setup(pipe);
+
 
 	mdp4_overlayproc_cfg(pipe);
 
@@ -184,6 +194,8 @@ void mdp4_atv_overlay(struct msm_fb_data_type *mfd)
 	} else {
 		pipe->srcp0_addr = (uint32)(buf + buf_offset);
 	}
+	mdp_update_pm(mfd, vsync_ctrl_db[0].vsync_time);
+
 	mdp4_overlay_mdp_perf_req(pipe, mfd);
 	mdp4_overlay_mdp_perf_upd(mfd, 1);
 	mdp4_overlay_rgb_setup(pipe);
