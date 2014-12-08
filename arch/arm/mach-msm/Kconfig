@@ -2443,19 +2443,15 @@ config PM8921_MIC_BIAS
 
 choice
     prompt "SWIQI"
-    default SWIQI_NONE
-    config SWIQI_NONE
-	bool "Disable SWIQI/2"
-
+    optional
+    default n
     config SEMC_SWIQI
         bool "Enable SWIQI"
-        default n
         help
           This enables SWIQI.
 
     config SONY_SWIQI2
         bool "Enable SWIQI2"
-        default n
         help
           This enables SWIQI2.
 endchoice
