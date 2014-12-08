@@ -27,6 +27,6 @@ struct device_data device_data = {
 	.id_bat_reg = &id_bat_reg,
 	.limit_tbl = &limit_tbl,
 	.battery_capacity_mah = 1900,
-	.maximum_charging_current_ma = 1525,
+	.maximum_charging_current_ma = 2000,
 	.battery_connector_resistance = 0,
 };
