@@ -243,32 +243,6 @@ struct pm8xxx_mpp_init_info {
 #define MPU3050_GPIO			(30)
 #endif
 
-#define PREALLOC_WLAN_NUMBER_OF_SECTIONS	4
-#define PREALLOC_WLAN_NUMBER_OF_BUFFERS		160
-#define PREALLOC_WLAN_SECTION_HEADER		24
-
-#define WLAN_SECTION_SIZE_0	(PREALLOC_WLAN_NUMBER_OF_BUFFERS * 128)
-#define WLAN_SECTION_SIZE_1	(PREALLOC_WLAN_NUMBER_OF_BUFFERS * 256)
-#define WLAN_SECTION_SIZE_2	(PREALLOC_WLAN_NUMBER_OF_BUFFERS * 512)
-#define WLAN_SECTION_SIZE_3	(PREALLOC_WLAN_NUMBER_OF_BUFFERS * 1024)
-
-#define WLAN_SKB_BUF_NUM	16
-
-static struct sk_buff *wlan_static_skb[WLAN_SKB_BUF_NUM];
-
-typedef struct wifi_mem_prealloc_struct {
-	void *mem_ptr;
-	unsigned long size;
-} wifi_mem_prealloc_t;
-
-static wifi_mem_prealloc_t wifi_mem_array[PREALLOC_WLAN_NUMBER_OF_SECTIONS] = {
-	{ NULL, (WLAN_SECTION_SIZE_0 + PREALLOC_WLAN_SECTION_HEADER) },
-	{ NULL, (WLAN_SECTION_SIZE_1 + PREALLOC_WLAN_SECTION_HEADER) },
-	{ NULL, (WLAN_SECTION_SIZE_2 + PREALLOC_WLAN_SECTION_HEADER) },
-	{ NULL, (WLAN_SECTION_SIZE_3 + PREALLOC_WLAN_SECTION_HEADER) }
-};
-
-
 #ifdef CONFIG_MMC_MSM_SDC2_SUPPORT
 static void (*sdc2_status_notify_cb)(int card_present, void *dev_id);
 static void *sdc2_status_notify_cb_devid;
@@ -413,12 +387,8 @@ static struct regulator_init_data saw_s0_init_data = {
 		.constraints = {
 			.name = "8901_s0",
 			.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
-			.min_uV = 800000,
-#ifdef CONFIG_MSM8X60_OC
-			.max_uV = 1350000,
-#else
-			.max_uV = 1325000,
-#endif
+			.min_uV = 775000,
+			.max_uV = 1400000,
 		},
 		.consumer_supplies = vreg_consumers_8901_S0,
 		.num_consumer_supplies = ARRAY_SIZE(vreg_consumers_8901_S0),
@@ -428,12 +398,8 @@ static struct regulator_init_data saw_s1_init_data = {
 		.constraints = {
 			.name = "8901_s1",
 			.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
-			.min_uV = 800000,
-#ifdef CONFIG_MSM8X60_OC
-			.max_uV = 1350000,
-#else
-			.max_uV = 1325000,
-#endif
+			.min_uV = 775000,
+			.max_uV = 1400000,
 		},
 		.consumer_supplies = vreg_consumers_8901_S1,
 		.num_consumer_supplies = ARRAY_SIZE(vreg_consumers_8901_S1),
@@ -2468,9 +2434,9 @@ unsigned char hdmi_is_primary;
 #define MSM_ION_CAMERA_SIZE     0x5000000 /*80MB*/
 
 #ifdef CONFIG_FB_MSM_OVERLAY1_WRITEBACK
-#define MSM_ION_WB_SIZE		0xC00000 /* 12MB */
+#define MSM_ION_WB_SIZE		0x19B6000
 #else
-#define MSM_ION_WB_SIZE		0x600000 /* 6MB */
+#define MSM_ION_WB_SIZE		0x7E9000
 #endif
 
 #ifdef CONFIG_QSEECOM
@@ -2480,11 +2446,8 @@ unsigned char hdmi_is_primary;
 
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 #define MSM_ION_AUDIO_SIZE	MSM_PMEM_AUDIO_SIZE
-#define MSM_ION_HEAP_NUM	9
 #define MSM_HDMI_PRIM_ION_SF_SIZE MSM_HDMI_PRIM_PMEM_SF_SIZE
 static unsigned msm_ion_sf_size = MSM_ION_SF_SIZE;
-#else
-#define MSM_ION_HEAP_NUM	1
 #endif
 
 static unsigned fb_size;
@@ -3575,13 +3538,8 @@ static struct regulator_consumer_supply vreg_consumers_PM8058_S1[] = {
 /* RPM early regulator constraints */
 static struct rpm_regulator_init_data rpm_regulator_early_init_data[] = {
 	/*	 ID       a_on pd ss min_uV   max_uV   init_ip    freq */
-#ifdef CONFIG_MSM8X60_OC
-	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1350000, SMPS_HMIN, 1p60),
-	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1350000, SMPS_HMIN, 1p60),
-#else
-	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1325000, SMPS_HMIN, 1p60),
-	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1250000, SMPS_HMIN, 1p60),
-#endif
+	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1400000, SMPS_HMIN, 1p60),
+	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1400000, SMPS_HMIN, 1p60),
 };
 
 static struct rpm_regulator_platform_data rpm_regulator_early_pdata = {
@@ -3864,30 +3822,33 @@ struct platform_device msm_device_sdio_al = {
 
 #endif /* CONFIG_MSM_SDIO_AL */
 
-static void *fuji_wifi_mem_prealloc(int section, unsigned long size)
+#define WL_RST_N (130)
+#define WL_OOB_IRQ (128)
+
+static int __init fuji_wifi_init(void)
 {
-	if (section == PREALLOC_WLAN_NUMBER_OF_SECTIONS)
-		return wlan_static_skb;
-	if (section < 0 || section > PREALLOC_WLAN_NUMBER_OF_SECTIONS)
-		return NULL;
-	if (wifi_mem_array[section].size < size)
-		return NULL;
-	return wifi_mem_array[section].mem_ptr;
+	int rc;
+
+	rc = gpio_request(WL_RST_N, "WL_RST_N gpio");
+	if (rc)
+		pr_err("WL_RST_N gpio request failed:%d\n", rc);
+
+	rc = gpio_direction_output(WL_RST_N, 0);
+	if (rc)
+		pr_err("WL_RST_N gpio direction configuration failed:%d\n", rc);
+
+	return 0;
 }
 
-int __init fuji_init_wifi_mem(void)
+late_initcall(fuji_wifi_init);
+
+static int fuji_wifi_set_power(int on)
 {
-	int i;
+	pr_err("Powering %s wifi\n", (on ? "on" : "off"));
 
-	for (i = 0; i < WLAN_SKB_BUF_NUM; i++)
-		wlan_static_skb[i] = dev_alloc_skb(4096);
+    gpio_set_value(WL_RST_N, on);
+	msleep(200);
 
-	for (i = 0; i < PREALLOC_WLAN_NUMBER_OF_SECTIONS; i++) {
-		wifi_mem_array[i].mem_ptr = kmalloc(wifi_mem_array[i].size,
-							GFP_KERNEL);
-		if (wifi_mem_array[i].mem_ptr == NULL)
-			return -ENOMEM;
-	}
 	return 0;
 }
 
@@ -3909,7 +3870,7 @@ static unsigned int fuji_wifi_status(struct device *dev)
 	return fuji_wifi_cd;
 }
 
-int fuji_wifi_set_carddetect(int val)
+static int fuji_wifi_set_carddetect(int val)
 {
 	fuji_wifi_cd = val;
 	if (wifi_status_cb)
@@ -3919,21 +3880,198 @@ int fuji_wifi_set_carddetect(int val)
 	return 0;
 }
 
-struct wifi_platform_data fuji_wifi_control = {
-	.set_carddetect = fuji_wifi_set_carddetect,
-	.mem_prealloc	= fuji_wifi_mem_prealloc,
-};
+#define MAC_LEN 6
+#define MACADDR_BUF_LEN            64
+#define MACADDR_PATH "/data/etc/wifi/fw"
 
-static int __init fuji_wifi_init(void)
+static int fuji_wifi_aton(const char *orig, size_t len, unsigned char *eth)
 {
-	return fuji_init_wifi_mem();
+	const char *bufp;
+	int i;
+
+	i = 0;
+	for(bufp = orig; bufp!=orig+len && *bufp; ++bufp) {
+		unsigned int val;
+		unsigned char c = *bufp++;
+
+		if (c >= '0' && c <= '9') val = c - '0';
+		else if (c >= 'a' && c <= 'f') val = c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') val = c - 'A' + 10;
+		else {
+			break;
+		}
+
+		val <<= 4;
+		c = *bufp++;
+		if (c >= '0' && c <= '9') val |= c - '0';
+		else if (c >= 'a' && c <= 'f') val |= c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') val |= c - 'A' + 10;
+		else {
+			break;
+		}
+
+		eth[i] = (unsigned char) (val & 0377);
+		if(++i == MAC_LEN) {
+			return 1;
+		}
+		if (*bufp != ':')
+			break;
+	}
+	return 0;
 }
 
-late_initcall(fuji_wifi_init);
+static int fuji_wifi_get_mac_addr(unsigned char *buf)
+{
+	int ret = 0;
+	int length;
+	mm_segment_t oldfs;
+	struct file *filp;
+	struct inode *inode = NULL;
+	unsigned char macaddr_buf[MACADDR_BUF_LEN];
+
+	if (!buf)
+		return -EINVAL;
+
+	oldfs = get_fs();
+	set_fs(KERNEL_DS);
+
+	filp = filp_open(MACADDR_PATH, O_RDONLY, S_IRUSR);
+	if (IS_ERR(filp)) {
+		set_fs(oldfs);
+		return -1;
+	}
+	if (!filp->f_op) {
+		filp_close(filp, NULL);
+		set_fs(oldfs);
+		return -1;
+	}
+	inode = filp->f_path.dentry->d_inode;
+	if (!inode) {
+		filp_close(filp, NULL);
+		set_fs(oldfs);
+		return -1;
+	}
+
+	/* check file size */
+	length = i_size_read(inode->i_mapping->host);
+	if (length+1 > MACADDR_BUF_LEN) {
+		filp_close(filp, NULL);
+		set_fs(oldfs);
+		return -1;
+	}
+
+	/* read mac address */
+	if (filp->f_op->read(filp, macaddr_buf, length, &filp->f_pos) != length) {
+		filp_close(filp, NULL);
+		set_fs(oldfs);
+		return -1;
+	}
+	macaddr_buf[length] = '\0';
+
+	/* read mac address success */
+	filp_close(filp, NULL);
+	set_fs(oldfs);
+
+	/* convert mac address */
+	if (!fuji_wifi_aton(macaddr_buf, length, buf)) {
+		return -1;
+	}
+
+	return ret;
+}
+
+/* Customized Locale table : OPTIONAL feature */
+#define WLC_CNTRY_BUF_SZ        4
+typedef struct cntry_locales_custom {
+	char iso_abbrev[WLC_CNTRY_BUF_SZ];
+	char custom_locale[WLC_CNTRY_BUF_SZ];
+	int  custom_locale_rev;
+} cntry_locales_custom_t;
+
+static cntry_locales_custom_t fuji_wifi_translate_custom_table[] = {
+/* Table should be filled out based on custom platform regulatory requirement */
+	{"",   "XY", 9},  /* universal */
+	{"US", "Q2", 32}, /* input ISO "US" to : Q2 regrev 32 */
+	{"CA", "Q2", 32}, /* input ISO "CA" to : Q2 regrev 32 */
+	{"EU", "EU", 51}, /* European union countries */
+	{"AT", "EU", 51},
+	{"BE", "EU", 51},
+	{"BG", "EU", 51},
+	{"CY", "EU", 51},
+	{"CZ", "EU", 51},
+	{"DK", "EU", 51},
+	{"EE", "EU", 51},
+	{"FI", "EU", 51},
+	{"FR", "EU", 51},
+	{"DE", "EU", 51},
+	{"GR", "EU", 51},
+	{"HU", "EU", 51},
+	{"IE", "EU", 51},
+	{"IT", "EU", 51},
+	{"LV", "EU", 51},
+	{"LI", "EU", 51},
+	{"LT", "EU", 51},
+	{"LU", "EU", 51},
+	{"MT", "EU", 51},
+	{"NL", "EU", 51},
+	{"PL", "EU", 51},
+	{"PT", "EU", 51},
+	{"RO", "EU", 51},
+	{"SK", "EU", 51},
+	{"SI", "EU", 51},
+	{"ES", "EU", 51},
+	{"SE", "EU", 51},
+	{"GB", "EU", 51}, /* input ISO "GB" to : EU regrev 51 */
+	{"IL", "IL", 0},
+	{"CH", "CH", 0},
+	{"TR", "TR", 0},
+	{"NO", "NO", 0},
+	{"KR", "KR", 25},
+	{"AU", "XY", 9},
+	{"CN", "CN", 0},
+	{"TW", "XY", 9},
+	{"AR", "XY", 9},
+	{"MX", "XY", 9},
+	{"JP", "EU", 51},
+	{"BR", "KR", 25}
+};
+
+static void *fuji_wifi_get_country_code(char *ccode)
+{
+	int i;
+
+	if (!ccode)
+		return NULL;
+
+	for (i = 0; i < ARRAY_SIZE(fuji_wifi_translate_custom_table); i++)
+		if (strcmp(ccode, fuji_wifi_translate_custom_table[i].iso_abbrev) == 0)
+			return &fuji_wifi_translate_custom_table[i];
+
+	return &fuji_wifi_translate_custom_table[0];
+}
+
+static struct wifi_platform_data fuji_wifi_control = {
+    .set_power      = fuji_wifi_set_power,
+	.set_carddetect = fuji_wifi_set_carddetect,
+	.get_mac_addr   = fuji_wifi_get_mac_addr,
+	.get_country_code   = fuji_wifi_get_country_code,
+};
+
+static struct resource fuji_wifi_resource[] = {
+	[0] = {
+		.name	= "bcmdhd_wlan_irq",
+		.start	= MSM_GPIO_TO_INT(WL_OOB_IRQ),
+		.end	= MSM_GPIO_TO_INT(WL_OOB_IRQ),
+		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL |
+			  IORESOURCE_IRQ_SHAREABLE,
+	},
+};
 
 static struct platform_device fuji_wifi = {
-	.name   = "bcm4330_wlan",
+	.name   = "bcmdhd_wlan",
 	.id	    = -1,
+	.num_resources	= ARRAY_SIZE(fuji_wifi_resource),
+	.resource	= fuji_wifi_resource,
 	.dev    = {
 		.platform_data = &fuji_wifi_control,
 	},
@@ -4248,11 +4386,6 @@ static struct platform_device *fuji_devices[] __initdata = {
 #ifdef CONFIG_RAMDUMP_CRASH_LOGS
 	&ramdumplog_device,
 #endif
-#ifdef CONFIG_MSM_8x60_VOIP
-	&asoc_msm_mvs,
-	&asoc_mvs_dai0,
-	&asoc_mvs_dai1,
-#endif
 #ifdef CONFIG_SONY_SSM
        &sony_ssm_device,
 #endif
@@ -4306,9 +4439,7 @@ static struct ion_co_heap_pdata co_ion_pdata = {
  * to each other.
  * Don't swap the order unless you know what you are doing!
  */
-static struct ion_platform_data ion_pdata = {
-	.nr = MSM_ION_HEAP_NUM,
-	.heaps = {
+struct ion_platform_heap msm8x60_heaps [] = {
 		{
 			.id	= ION_SYSTEM_HEAP_ID,
 			.type	= ION_HEAP_TYPE_SYSTEM,
@@ -4342,6 +4473,7 @@ static struct ion_platform_data ion_pdata = {
 			.memory_type = ION_SMI_TYPE,
 			.extra_data = (void *) &cp_mfc_ion_pdata,
 		},
+#ifndef CONFIG_MSM_IOMMU
 		{
 			.id	= ION_SF_HEAP_ID,
 			.type	= ION_HEAP_TYPE_CARVEOUT,
@@ -4349,6 +4481,12 @@ static struct ion_platform_data ion_pdata = {
 			.size	= MSM_ION_SF_SIZE,
 			.memory_type = ION_EBI_TYPE,
 			.extra_data = (void *)&co_ion_pdata,
+		},
+#endif
+		{
+			.id	= ION_IOMMU_HEAP_ID,
+			.type	= ION_HEAP_TYPE_IOMMU,
+			.name	= ION_IOMMU_HEAP_NAME,
 		},
 		{
 			.id	= ION_CAMERA_HEAP_ID,
@@ -4385,7 +4523,11 @@ static struct ion_platform_data ion_pdata = {
 			.extra_data = (void *)&co_ion_pdata,
 		},
 #endif
-	}
+};
+
+static struct ion_platform_data ion_pdata = {
+	.nr = ARRAY_SIZE(msm8x60_heaps),
+	.heaps = msm8x60_heaps,
 };
 
 static struct platform_device ion_dev = {
@@ -4927,7 +5069,7 @@ static struct pm8xxx_vibrator_platform_data pm8058_vib_pdata = {
 };
 
 static struct pm8xxx_rtc_platform_data pm8058_rtc_pdata = {
-	.rtc_write_enable       = false,
+	.rtc_write_enable       = true,
 	.rtc_alarm_powerup	= false,
 };
 
@@ -7774,6 +7916,7 @@ static int atv_dac_power(int on)
 static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = MDP_VSYNC_GPIO,
 	.mdp_max_clk = 200000000,
+	.mdp_max_bw = 2000000000,
 #ifdef CONFIG_MSM_BUS_SCALING
 	.mdp_bus_scale_table = &mdp_bus_scale_pdata,
 #endif
